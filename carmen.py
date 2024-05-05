@@ -16,7 +16,7 @@ class ProfessionalThiefGame(tk.Tk):
         super().__init__()
         self.title("Professional Thief")
 
-        self.images_path = r"C:\Users\shift\Desktop\Professional-thief-Base-on-Carmem-master"
+        self.images_path = r"C:\Users\shift\Desktop\Professional-thief-Base-on-Carmem"
         self.countries = ["United States", "Canada", "Mexico", "Brazil", "Argentina", "France", "Germany", "Italy", "Russia", "China", "Japan", "Australia"]
         
         self.capitals = {
@@ -78,18 +78,12 @@ class ProfessionalThiefGame(tk.Tk):
         self.pol_run_img = self.load_image('pol_run.png')
         self.pol_run = self.canvas.create_image(-110,180, image=self.pol_run_img)
 
-        self.canvas.create_text(500, 300, font=('Arial', self.font_size), text="A Professional Thief has stolen a valuable artifact and is on the run.", fill=self.color)
-        self.canvas.create_text(500, 325, font=('Arial', self.font_size), text="Your mission is to track her down and recover the artifact.", fill=self.color)
-        self.canvas.create_text(500, 350, font=('Arial', self.font_size), text="The Professional Thief was last seen in a country", fill=self.color)
-        self.canvas.create_text(500, 375, font=('Arial', self.font_size), text="whose capital is: " + self.target_capital, fill=self.color)
+        welcome_text = "Welcome to Professional Thief!\n\n"
+        welcome_text += "A Professional Thief has stolen a valuable artifact and is on the run.\n\n"
+        welcome_text += "Your mission is to track her down and recover the artifact.\n\n"
+        welcome_text += f"The Professional Thief was last seen in a country whose capital is: {self.target_capital}"
 
-        # Adiciona uma caixa de texto na tela principal
-        self.input_entry = tk.Entry(self, font=('Arial', self.font_size))
-        self.input_entry.place(x=350, y=400)
-
-        confirm_button = tk.Button(self, text="Confirmar", command=self.check_input)
-        confirm_button.place(x=500, y=430)
-
+        self.canvas.create_text(500, 375, font=('Arial', self.font_size), text=welcome_text, fill=self.color, anchor=tk.CENTER)     
     def animate(self):
         self.animate_pol()
         self.animate_thief()
@@ -107,15 +101,20 @@ class ProfessionalThiefGame(tk.Tk):
         self.canvas.move(self.professional_thief, VELOCITY, 0)
         if self.start_x < CANVAS_WIDTH:
             self.after(int(DELAY * 1000), self.animate_thief)
-        else:
-            self.after(int(DELAY * 1000), self.show_input_box)
+ 
    
     def show_wanted(self):
         self.wanted_img = self.load_image('wanted.png')
         self.canvas.create_image(500, 170, image=self.wanted_img)
+        # Chama a função para mostrar a caixa de texto após a imagem "wanted"
+        self.after(int(DELAY * 1000), self.show_input_box)
 
     def show_input_box(self):
-        pass
+        self.input_entry = tk.Entry(self, font=('Arial', self.font_size))
+        self.input_entry.place(x=350, y=500)
+
+        confirm_button = tk.Button(self, text="Confirmar", command=self.check_input)
+        confirm_button.place(x=600, y=500)
 
     def check_input(self):
         guess = self.input_entry.get().strip().title()
@@ -141,23 +140,18 @@ class ProfessionalThiefGame(tk.Tk):
                 flag_label = tk.Label(self.canvas, image=flag_image)
                 flag_label.image = flag_image  # Mantém uma referência para evitar a coleta de lixo
                 # Posiciona a imagem no centro do canvas
-                flag_label.place(relx=0.5, rely=0.2, anchor=tk.CENTER)
+                flag_label.place(relx=0.5, rely=0.15, anchor=tk.CENTER)
                # Carrega e adiciona a imagem da polícia
                 police_image = self.load_image('police.png')
                 if police_image:
                     police_label = tk.Label(self.canvas, image=police_image)
                     police_label.image = police_image  # Mantém uma referência para evitar a coleta de lixo
-                    police_label.place(relx=0.5, rely=0.8, anchor=tk.CENTER)  # Coloca a imagem no canvas
-                else:
-                    print("Falha ao carregar a imagem da polícia.")
+                    police_label.place(relx=0.2, rely=0.45, anchor=tk.CENTER)  # Coloca a imagem no canvas
+                
+                info_text = "The Professional Thief fled\nto another country,\nour intelligence says\nthat she was last seen\nin a country with the\ndisplayed flag!"
 
-                self.canvas.create_text(150, 250, font=('Arial Black', self.font_size), text="The Professional Thief fled", fill=self.color)
-                self.canvas.create_text(150, 275, font=('Arial Black', self.font_size), text="to another country,", fill=self.color)
-                self.canvas.create_text(150, 300, font=('Arial Black', self.font_size), text="our intelligence says", fill=self.color)
-                self.canvas.create_text(150, 325, font=('Arial Black', self.font_size), text="that she was last seen", fill=self.color)
-                self.canvas.create_text(150, 350, font=('Arial Black', self.font_size), text="in a country with the", fill=self.color)
-                self.canvas.create_text(150, 375, font=('Arial Black', self.font_size), text="displayed flag!", fill=self.color)
-            
+                self.canvas.create_text(500, 350, font=('Arial Black', self.font_size), text=info_text, fill=self.color, anchor=tk.CENTER)
+
                 # Verificação da segunda resposta
                 self.after(100, self.check_second_input)
         else:
