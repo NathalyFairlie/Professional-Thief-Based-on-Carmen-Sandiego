@@ -1,16 +1,24 @@
 import os
 import tkinter as tk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 import random
 import time
+
+CANVAS_WIDTH = 1000
+CANVAS_HEIGHT = 1000
+VELOCITY = 30
+DELAY = 0.08 
+MAX_WRONG_GUESSES = 3
 
 class ProfessionalThiefGame(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Professional Thief")
 
-        self.images_path = "C:/Users/Nathaly/Desktop/Game based on Carmen Sandiego by Nathaly Fairlie Pearson Freitas/"
+        self.images_path = r"C:\Users\shift\Desktop\Professional-thief-Base-on-Carmem-master"
         self.countries = ["United States", "Canada", "Mexico", "Brazil", "Argentina", "France", "Germany", "Italy", "Russia", "China", "Japan", "Australia"]
+        
         self.capitals = {
             "United States": "Washington, D.C.",
             "Canada": "Ottawa",
@@ -26,6 +34,21 @@ class ProfessionalThiefGame(tk.Tk):
             "Australia": "Canberra"
         }
 
+        self.flags = {
+            "United States": "United_States-Flag.png",
+            "Canada":"Canada-Flag.png",
+            "Mexico": "Mexico-Flag.png",
+            "Brazil": "Brazil-Flag.png",
+            "Argentina": "Argentina-Flag.png",
+            "France": "France-Flag.png",
+            "Germany": "Germany-Flag.png",
+            "Italy": "Italy-Flag.png",
+            "Russia": "Russia-Flag.png",
+            "China": "China-Flag.png",
+            "Japan": "Japan-Flag.png",
+            "Australia": "Australia-Flag.png"
+        }
+
         self.font_size = 15
         self.color = "black"
 
@@ -34,43 +57,131 @@ class ProfessionalThiefGame(tk.Tk):
         self.start_xP = -200
         self.start_yP = 100
 
+        self.wrong_guesses = 0  # Inicializa o contador de respostas erradas
         self.target_country = random.choice(self.countries)
         self.target_capital = self.capitals[self.target_country]
 
+        self.create_canvas()
         self.first_screen()
         self.animate()
 
-    def first_screen(self):
-        self.canvas = tk.Canvas(self, width=1000, height=1000)
+    def create_canvas(self):
+        self.canvas = tk.Canvas(self, width=CANVAS_WIDTH, height=CANVAS_HEIGHT)
         self.canvas.pack()
 
+    def first_screen(self):
         self.canvas.create_text(500, 50, font=('Arial Black', 25), text="Welcome to Professional Thief!", fill=self.color)
 
         self.professional_thief_img = self.load_image('Professional thief.png')
-        self.professional_thief = self.canvas.create_image(50, self.start_y, image=self.professional_thief_img)
+        self.professional_thief = self.canvas.create_image(50, 180, image=self.professional_thief_img)
 
         self.pol_run_img = self.load_image('pol_run.png')
-        self.pol_run = self.canvas.create_image(50, self.start_yP, image=self.pol_run_img)
+        self.pol_run = self.canvas.create_image(-110,180, image=self.pol_run_img)
 
         self.canvas.create_text(500, 300, font=('Arial', self.font_size), text="A Professional Thief has stolen a valuable artifact and is on the run.", fill=self.color)
         self.canvas.create_text(500, 325, font=('Arial', self.font_size), text="Your mission is to track her down and recover the artifact.", fill=self.color)
         self.canvas.create_text(500, 350, font=('Arial', self.font_size), text="The Professional Thief was last seen in a country", fill=self.color)
         self.canvas.create_text(500, 375, font=('Arial', self.font_size), text="whose capital is: " + self.target_capital, fill=self.color)
 
+        # Adiciona uma caixa de texto na tela principal
+        self.input_entry = tk.Entry(self, font=('Arial', self.font_size))
+        self.input_entry.place(x=350, y=400)
+
+        confirm_button = tk.Button(self, text="Confirmar", command=self.check_input)
+        confirm_button.place(x=500, y=430)
+
     def animate(self):
         self.animate_pol()
+        self.animate_thief()
 
     def animate_pol(self):
-        self.start_xP += 5
-        self.canvas.move(self.pol_run, 5, 0)
-        if self.start_xP < 1000:
-            self.after(50, self.animate_pol)
+        self.start_xP += VELOCITY
+        self.canvas.move(self.pol_run, VELOCITY, 0)
+        if self.start_xP < CANVAS_WIDTH:
+            self.after(int(DELAY * 1000), self.animate_pol)
         else:
             self.show_wanted()
 
+    def animate_thief(self):
+        self.start_x += VELOCITY
+        self.canvas.move(self.professional_thief, VELOCITY, 0)
+        if self.start_x < CANVAS_WIDTH:
+            self.after(int(DELAY * 1000), self.animate_thief)
+        else:
+            self.after(int(DELAY * 1000), self.show_input_box)
+   
     def show_wanted(self):
         self.wanted_img = self.load_image('wanted.png')
-        self.canvas.create_image(850, 100, image=self.wanted_img)
+        self.canvas.create_image(500, 170, image=self.wanted_img)
+
+    def show_input_box(self):
+        pass
+
+    def check_input(self):
+        guess = self.input_entry.get().strip().title()
+        self.previusly_country = guess  # Salvando a tentativa anterior
+
+        if guess == self.target_country:
+            messagebox.showinfo("contatulations","Correct Answer")
+            self.target_country = random.choice(self.countries)
+            self.target_capital = self.capitals[self.target_country]
+            self.target_flag = self.flags[self.target_country]
+            while self.previusly_country == self.target_country:
+                self.target_country = random.choice(self.countries)
+                self.target_capital = self.capitals[self.target_country]
+                self.target_flag = self.flags[self.target_country]
+
+            # Configuração da segunda tela
+            self.canvas.delete(tk.ALL)  # Limpa a tela
+            self.input_entry.delete(0, tk.END)
+             # Carrega a imagem da bandeira
+            flag_image = self.load_image(self.flags[self.target_country])
+            if flag_image:
+                
+                flag_label = tk.Label(self.canvas, image=flag_image)
+                flag_label.image = flag_image  # Mantém uma referência para evitar a coleta de lixo
+                # Posiciona a imagem no centro do canvas
+                flag_label.place(relx=0.5, rely=0.2, anchor=tk.CENTER)
+               # Carrega e adiciona a imagem da polícia
+                police_image = self.load_image('police.png')
+                if police_image:
+                    police_label = tk.Label(self.canvas, image=police_image)
+                    police_label.image = police_image  # Mantém uma referência para evitar a coleta de lixo
+                    police_label.place(relx=0.5, rely=0.8, anchor=tk.CENTER)  # Coloca a imagem no canvas
+                else:
+                    print("Falha ao carregar a imagem da polícia.")
+
+                self.canvas.create_text(150, 250, font=('Arial Black', self.font_size), text="The Professional Thief fled", fill=self.color)
+                self.canvas.create_text(150, 275, font=('Arial Black', self.font_size), text="to another country,", fill=self.color)
+                self.canvas.create_text(150, 300, font=('Arial Black', self.font_size), text="our intelligence says", fill=self.color)
+                self.canvas.create_text(150, 325, font=('Arial Black', self.font_size), text="that she was last seen", fill=self.color)
+                self.canvas.create_text(150, 350, font=('Arial Black', self.font_size), text="in a country with the", fill=self.color)
+                self.canvas.create_text(150, 375, font=('Arial Black', self.font_size), text="displayed flag!", fill=self.color)
+            
+                # Verificação da segunda resposta
+                self.after(100, self.check_second_input)
+        else:
+            self.wrong_guesses += 1
+            remaining_guesses = MAX_WRONG_GUESSES - self.wrong_guesses
+            if self.wrong_guesses >= MAX_WRONG_GUESSES:
+                messagebox.showinfo("Game Over", f"GAME OVER. No more attempts remaining.")
+                self.destroy()
+            else:
+                messagebox.showinfo("Incorrect Answer", f"Wrong guess! {remaining_guesses} attempts remaining.")
+                
+           
+
+
+            
+    def check_second_input(self):
+        guess = input("Enter the name of a country: ").strip().title()
+        if guess == self.target_country:
+            print("Congratulations! You found the Professional Thief!")
+            # Configuração da terceira tela
+            self.canvas.delete(tk.ALL)  # Limpa a tela
+            self.canvas.create_image(100, 100, image=self.load_image('jail.png'))
+            self.canvas.create_text(15, 20, font=('Arial Black', self.font_size + 10), text="The Professional Thief got caught!", fill="blue")
+       
 
     def load_image(self, filename):
         image_path = os.path.join(self.images_path, filename)
