@@ -107,15 +107,18 @@ class ProfessionalThiefGame(tk.Tk):
         self.wanted_img = self.load_image('wanted.png')
         self.canvas.create_image(500, 170, image=self.wanted_img)
         # Chama a função para mostrar a caixa de texto após a imagem "wanted"
-        self.after(int(DELAY * 1000), self.show_input_box)
-
-    def show_input_box(self):
+        self.after(int(DELAY * 1000), self.show_input_box(confirm_command=self.check_input))
+        
+    
+    
+    def show_input_box(self, confirm_command=None):
         self.input_entry = tk.Entry(self, font=('Arial', self.font_size))
         self.input_entry.place(x=350, y=500)
+        
+        self.confirm_button = tk.Button(self, text="Confirmar", command=confirm_command)
+        self.confirm_button.place(x=600, y=500)
 
-        confirm_button = tk.Button(self, text="Confirmar", command=self.check_input)
-        confirm_button.place(x=600, y=500)
-
+    
     def check_input(self):
         guess = self.input_entry.get().strip().title()
         self.previusly_country = guess  # Salvando a tentativa anterior
@@ -132,7 +135,20 @@ class ProfessionalThiefGame(tk.Tk):
 
             # Configuração da segunda tela
             self.canvas.delete(tk.ALL)  # Limpa a tela
-            self.input_entry.delete(0, tk.END)
+            self.input_entry.destroy()
+            self.confirm_button.destroy()
+            self.segunda_pagina()
+        else:
+            self.wrong_guesses += 1
+            remaining_guesses = MAX_WRONG_GUESSES - self.wrong_guesses
+            if self.wrong_guesses >= MAX_WRONG_GUESSES:
+                messagebox.showinfo("Game Over", f"GAME OVER. No more attempts remaining.")
+                self.destroy()
+            else:
+                messagebox.showinfo("Incorrect Answer", f"Wrong guess! {remaining_guesses} attempts remaining.")
+
+    def segunda_pagina(self):
+            self.show_input_box(confirm_command=self.check_second_input)
              # Carrega a imagem da bandeira
             flag_image = self.load_image(self.flags[self.target_country])
             if flag_image:
@@ -154,26 +170,19 @@ class ProfessionalThiefGame(tk.Tk):
 
                 # Verificação da segunda resposta
                 self.after(100, self.check_second_input)
-        else:
-            self.wrong_guesses += 1
-            remaining_guesses = MAX_WRONG_GUESSES - self.wrong_guesses
-            if self.wrong_guesses >= MAX_WRONG_GUESSES:
-                messagebox.showinfo("Game Over", f"GAME OVER. No more attempts remaining.")
-                self.destroy()
-            else:
-                messagebox.showinfo("Incorrect Answer", f"Wrong guess! {remaining_guesses} attempts remaining.")
-                
-           
-
-
+        
             
     def check_second_input(self):
-        guess = input("Enter the name of a country: ").strip().title()
-        if guess == self.target_country:
-            print("Congratulations! You found the Professional Thief!")
-            # Configuração da terceira tela
+        guess2 = self.input_entry.get().strip().title()
+        self.previusly_country = guess2  # Salvando a tentativa anterior
+
+        if guess2 == self.target_country:                
+            
             self.canvas.delete(tk.ALL)  # Limpa a tela
-            self.canvas.create_image(100, 100, image=self.load_image('jail.png'))
+            self.input_entry.destroy()
+            self.confirm_button.destroy()
+            
+            self.canvas.create_image(500, 500, image=self.load_image('jail.png'))
             self.canvas.create_text(15, 20, font=('Arial Black', self.font_size + 10), text="The Professional Thief got caught!", fill="blue")
        
 
